@@ -29,7 +29,7 @@
 		"onLanguage:javascriptreact",
 		"onLanguage:typescriptreact"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
@@ -40,8 +40,12 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"compile": "npm run check-types && node esbuild.js",
+		"check-types": "tsc --noEmit",
+		"watch": "npm-run-all -p watch:*",
+		"watch:esbuild": "node esbuild.js --watch",
+		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+		"package": "npm run check-types && node esbuild.js --production",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "vscode-test",
@@ -58,6 +62,7 @@
 		"@vscode/test-cli": "^0.0.9",
 		"@vscode/test-electron": "^2.4.0",
 		"debug": "^4.3.6",
+		"esbuild": "^0.23.1",
 		"eslint": "^8.57.0",
 		"prettier": "^3.3.3",
 		"proptype-converter": "^1.2.0",
