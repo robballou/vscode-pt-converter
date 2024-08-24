@@ -44,6 +44,12 @@ class PTConverterActionProvider implements vscode.CodeActionProvider {
 						types,
 					);
 				}
+
+				const fileName = document.uri.fsPath.replace(/\.js$/, ".ts");
+				const newName = vscode.Uri.file(fileName);
+				if (newName.fsPath !== document.uri.fsPath) {
+					convertAction.edit.renameFile(document.uri, newName);
+				}
 				actions.push(convertAction);
 			});
 			return actions;
