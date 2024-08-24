@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { createTypeForComponent } from "./propTypeConverter";
+import { createTypeForComponent } from "proptype-converter";
 import { processDocument } from "./processDocument";
 
 class PTConverterActionProvider implements vscode.CodeActionProvider {

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as ts from "typescript";
-import { processSourceFile } from "./propTypeConverter";
+import { processSourceFile } from "proptype-converter";
 
 export function processDocument(document: vscode.TextDocument) {
 	const sourceFile = ts.createSourceFile(

@@ -50,6 +50,7 @@
     "debug": "^4.3.6",
     "eslint": "^8.57.0",
     "prettier": "^3.3.3",
+    "proptype-converter": "^1.2.0",
     "typescript": "^5.4.5"
   }
 }
