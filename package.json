@@ -2,6 +2,11 @@
 	"name": "vscode-pt-converter",
 	"displayName": "PropType Converter",
 	"description": "Rudimentary PropType to TypeScript converter for VSCode",
+	"publisher": "robballou",
+	"repository": {
+		"type": "git",
+		"url": "git@github.com:robballou/vscode-pt-converter.git"
+	},
 	"icon": "logo.png",
 	"version": "0.1.0",
 	"engines": {
