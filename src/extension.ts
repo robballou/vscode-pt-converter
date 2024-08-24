@@ -53,12 +53,17 @@ class PTConverterActionProvider implements vscode.CodeActionProvider {
 	}
 }
 
+const languages = [
+	"typescript",
+	"javascript",
+	"javascriptreact",
+	"typescriptreact",
+];
+
 export function activate(context: vscode.ExtensionContext) {
+	console.log("Activating vscode-pt-converter");
 	vscode.languages.registerCodeActionsProvider(
-		[
-			{ scheme: "file", language: "typescript" },
-			{ scheme: "file", language: "javascript" },
-		],
+		languages.map((language) => ({ scheme: "file", language })),
 		new PTConverterActionProvider(),
 		{
 			providedCodeActionKinds: [vscode.CodeActionKind.RefactorRewrite],
@@ -69,8 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerTextEditorCommand(
 			"vscode-pt-converter.convert",
 			(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-				const validDocumentTypes = ["javascript", "typescript"];
-				if (validDocumentTypes.includes(textEditor.document.languageId)) {
+				if (languages.includes(textEditor.document.languageId)) {
 					const result = processDocument(textEditor.document);
 					if (result && result.size > 0) {
 						textEditor.edit((edit) => {
