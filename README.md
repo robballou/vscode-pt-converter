@@ -5,7 +5,14 @@ This VSCode extension allows for easy use of [PropType Converter](https://github
 ## Features
 
 1. Provides a refactor option for JS/TS files to convert PropType implementations to TypeScript Types.
-1. Also provides a general convert command which will convert all the components in a file.
+1. Includes the ability to refactor `defaultProps` to a destructured parameter with default values.
+1. Also provides two general convert commands which will convert all the components in a file.
+
+## Usage
+
+While editing a React component, you can either use the "Refactor..." command/menu item, the code actions shortcut, or the "Convert PropTypes..." commands.
+
+The refactor/code actions options will only show up if PropTypes are detected. Additionally, they will rename the file to its appropriate TS file extension.
 
 ## Known Issues
 
