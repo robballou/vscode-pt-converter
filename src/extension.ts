@@ -169,19 +169,48 @@ export function activate(context: vscode.ExtensionContext) {
 					if (result && result.size > 0) {
 						textEditor.edit((edit) => {
 							result.forEach((component, name) => {
-								const typeText = createTypeForComponent(name, component);
-								if (component.componentRange) {
+								commandEditCallback(component, name, edit, textEditor);
+							});
+						});
+					}
+					return;
+				}
+
+				vscode.window.showErrorMessage(
+					`Cannot check this document for PropTypes: ${textEditor.document.languageId}`,
+				);
+			},
+		),
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerTextEditorCommand(
+			"vscode-pt-converter.convert-dp",
+			(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
+				if (languages.includes(textEditor.document.languageId)) {
+					const result = processDocument(textEditor.document);
+					if (result && result.size > 0) {
+						textEditor.edit((edit) => {
+							result.forEach((component, name) => {
+								commandEditCallback(component, name, edit, textEditor);
+
+								if (component.defaultProps && component.defaultPropsRange) {
 									edit.delete(
-										textRangeToRange(textEditor.document, component.range),
+										textRangeToRange(
+											textEditor.document,
+											component.defaultPropsRange,
+										),
 									);
-									edit.insert(
-										textEditor.document.positionAt(component.componentRange[0]),
-										`${typeText}\n\n`,
-									);
-								} else {
+								}
+
+								const props = createPropsForComponent(component);
+								if (props && component.parameterRange) {
 									edit.replace(
-										textRangeToRange(textEditor.document, component.range),
-										typeText,
+										textRangeToRange(
+											textEditor.document,
+											component.parameterRange,
+										),
+										`${props}: ${name}Props`,
 									);
 								}
 							});
@@ -196,6 +225,27 @@ export function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+}
+
+function commandEditCallback(
+	component: ComponentPropTypes,
+	name: string,
+	edit: vscode.TextEditorEdit,
+	textEditor: vscode.TextEditor,
+) {
+	const typeText = createTypeForComponent(name, component);
+	if (component.componentRange) {
+		edit.delete(textRangeToRange(textEditor.document, component.range));
+		edit.insert(
+			textEditor.document.positionAt(component.componentRange[0]),
+			`${typeText}\n\n`,
+		);
+	} else {
+		edit.replace(
+			textRangeToRange(textEditor.document, component.range),
+			typeText,
+		);
+	}
 }
 
 function textRangeToRange(

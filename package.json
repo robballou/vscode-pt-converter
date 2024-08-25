@@ -35,6 +35,10 @@
 			{
 				"command": "vscode-pt-converter.convert",
 				"title": "Convert PropTypes to TypeScript Types"
+			},
+			{
+				"command": "vscode-pt-converter.convert-dp",
+				"title": "Convert PropTypes and defaultProps to TypeScript Types"
 			}
 		]
 	},
