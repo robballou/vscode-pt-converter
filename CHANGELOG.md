@@ -4,6 +4,7 @@ All notable changes to the "vscode-pt-converter" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [v1.0.0]
 
-- Initial release
+- Full release!
+- Added support for `defaultProps`
