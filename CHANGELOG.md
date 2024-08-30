@@ -4,6 +4,10 @@ All notable changes to the "vscode-pt-converter" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v1.2.1]
+
+- Upgrade to proptype-converter v1.8.0 to fix some indent issues and add support for `instanceOf` PropTypes.
+
 ## [v1.2.0]
 
 - Upgrade to proptype-converter v1.7.0, which allows support for processing the "props" parameter of the component function even when no `defaultProps` are used.
