@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import {
 	ComponentPropTypes,
@@ -7,141 +5,9 @@ import {
 	createTypeForComponent,
 } from "proptype-converter";
 import { processDocument } from "./processDocument";
-
-class PTConverterActionProvider implements vscode.CodeActionProvider {
-	/**
-	 * Return the code action to convert just the proptypes...
-	 */
-	getConvertPropTypesAction(
-		key: string,
-		value: ComponentPropTypes,
-		document: vscode.TextDocument,
-	) {
-		const convertAction = new vscode.CodeAction(
-			`Convert PropTypes: ${key}`,
-			vscode.CodeActionKind.RefactorRewrite,
-		);
-		convertAction.edit = new vscode.WorkspaceEdit();
-		const types = createTypeForComponent(key, value);
-		this.addTypeEdits(convertAction.edit, types, value, document);
-
-		// rename the file to TS
-		const newName = this.getNewFileName(document.uri);
-		if (newName) {
-			convertAction.edit.renameFile(document.uri, newName);
-		}
-		return convertAction;
-	}
-
-	getConvertPropTypesWithDefaultPropsAction(
-		key: string,
-		value: ComponentPropTypes,
-		document: vscode.TextDocument,
-	) {
-		if (!value.defaultProps) {
-			return null;
-		}
-
-		const props = createPropsForComponent(value);
-		if (!props) {
-			return null;
-		}
-
-		const convertAction = new vscode.CodeAction(
-			`Convert PropTypes and defaultProps: ${key}`,
-			vscode.CodeActionKind.RefactorRewrite,
-		);
-		convertAction.edit = new vscode.WorkspaceEdit();
-		const types = createTypeForComponent(key, value);
-
-		// delete the existing .defaultProps
-		if (value.defaultPropsRange) {
-			convertAction.edit.delete(
-				document.uri,
-				textRangeToRange(document, value.defaultPropsRange),
-			);
-		}
-
-		// replace the functional components first argument with the new props (and defaults)
-		if (value.parameterRange) {
-			convertAction.edit.replace(
-				document.uri,
-				textRangeToRange(document, value.parameterRange),
-				`${props}: ${key}Props`,
-			);
-		}
-
-		this.addTypeEdits(convertAction.edit, types, value, document);
-
-		const newName = this.getNewFileName(document.uri);
-		if (newName) {
-			convertAction.edit.renameFile(document.uri, newName);
-		}
-		return convertAction;
-	}
-
-	addTypeEdits(
-		edit: vscode.WorkspaceEdit,
-		types: string,
-		value: ComponentPropTypes,
-		document: vscode.TextDocument,
-	) {
-		// if we identified the component, we can put the type above it
-		if (value.componentRange) {
-			edit.delete(document.uri, textRangeToRange(document, value.range));
-			edit.insert(
-				document.uri,
-				document.positionAt(value.componentRange[0]),
-				`${types}\n\n`,
-			);
-		} else {
-			edit.replace(
-				document.uri,
-				textRangeToRange(document, value.range),
-				types,
-			);
-		}
-	}
-
-	getNewFileName(currentUri: vscode.TextDocument["uri"]): vscode.Uri | null {
-		const fileName = currentUri.fsPath.replace(/\.j(sx?)$/, ".t$1");
-		const newName = vscode.Uri.file(fileName);
-		return newName.fsPath !== currentUri.fsPath ? newName : null;
-	}
-
-	provideCodeActions(
-		document: vscode.TextDocument,
-		range: vscode.Range | vscode.Selection,
-		context: vscode.CodeActionContext,
-		token: vscode.CancellationToken,
-	): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
-		if (context.triggerKind !== vscode.CodeActionTriggerKind.Invoke) {
-			return [];
-		}
-
-		const result = processDocument(document);
-		if (result && result.size > 0) {
-			const actions: vscode.ProviderResult<vscode.CodeAction[]> = [];
-			result.forEach((value, key) => {
-				const convertAction = this.getConvertPropTypesAction(
-					key,
-					value,
-					document,
-				);
-				actions.push(convertAction);
-
-				const convertWithDefaultPropsAction =
-					this.getConvertPropTypesWithDefaultPropsAction(key, value, document);
-				if (convertWithDefaultPropsAction) {
-					actions.push(convertWithDefaultPropsAction);
-				}
-			});
-			return actions;
-		}
-
-		return [];
-	}
-}
+import { PTConverterActionProvider } from "./PTConverterActionProvider";
+import { textRangeToRange } from "./utilities";
+import { renameFile } from "./files";
 
 const languages = [
 	"typescript",
@@ -149,6 +15,10 @@ const languages = [
 	"javascriptreact",
 	"typescriptreact",
 ];
+
+function isValidDocumentLanguage(document: vscode.TextDocument) {
+	return languages.includes(document.languageId);
+}
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log("Activating vscode-pt-converter");
@@ -160,68 +30,75 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
+	// Add the just-prop-types conversion
 	context.subscriptions.push(
 		vscode.commands.registerTextEditorCommand(
 			"vscode-pt-converter.convert",
-			(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-				if (languages.includes(textEditor.document.languageId)) {
-					const result = processDocument(textEditor.document);
-					if (result && result.size > 0) {
-						textEditor.edit((edit) => {
-							result.forEach((component, name) => {
-								commandEditCallback(component, name, edit, textEditor);
-							});
-						});
-					}
+			async (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
+				if (!isValidDocumentLanguage(textEditor.document)) {
+					vscode.window.showErrorMessage(
+						`Cannot check this document for PropTypes: ${textEditor.document.languageId}`,
+					);
 					return;
 				}
 
-				vscode.window.showErrorMessage(
-					`Cannot check this document for PropTypes: ${textEditor.document.languageId}`,
-				);
+				const result = processDocument(textEditor.document);
+				if (result && result.size > 0) {
+					result.forEach((component, name) => {
+						commandEditCallback(component, name, edit, textEditor);
+
+						const props = createPropsForComponent(component);
+						if (props && component.parameterRange) {
+							edit.replace(
+								textRangeToRange(textEditor.document, component.parameterRange),
+								`${props}: ${name}Props`,
+							);
+						}
+					});
+
+					renameFile(textEditor.document.uri);
+				}
 			},
 		),
 	);
 
+	// Add the convert PropTypes & defaultProps command.
 	context.subscriptions.push(
 		vscode.commands.registerTextEditorCommand(
 			"vscode-pt-converter.convert-dp",
 			(textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit) => {
-				if (languages.includes(textEditor.document.languageId)) {
-					const result = processDocument(textEditor.document);
-					if (result && result.size > 0) {
-						textEditor.edit((edit) => {
-							result.forEach((component, name) => {
-								commandEditCallback(component, name, edit, textEditor);
-
-								if (component.defaultProps && component.defaultPropsRange) {
-									edit.delete(
-										textRangeToRange(
-											textEditor.document,
-											component.defaultPropsRange,
-										),
-									);
-								}
-
-								const props = createPropsForComponent(component);
-								if (props && component.parameterRange) {
-									edit.replace(
-										textRangeToRange(
-											textEditor.document,
-											component.parameterRange,
-										),
-										`${props}: ${name}Props`,
-									);
-								}
-							});
-						});
-					}
+				if (!isValidDocumentLanguage(textEditor.document)) {
+					vscode.window.showErrorMessage(
+						`Cannot check this document for PropTypes: ${textEditor.document.languageId}`,
+					);
 					return;
 				}
+				const result = processDocument(textEditor.document);
+				if (result && result.size > 0) {
+					result.forEach((component, name) => {
+						commandEditCallback(component, name, edit, textEditor);
 
-				vscode.window.showErrorMessage(
-					`Cannot check this document for PropTypes: ${textEditor.document.languageId}`,
-				);
+						if (component.defaultProps && component.defaultPropsRange) {
+							edit.delete(
+								textRangeToRange(
+									textEditor.document,
+									component.defaultPropsRange,
+								),
+							);
+						}
+
+						const props = createPropsForComponent(component);
+						if (props && component.parameterRange) {
+							edit.replace(
+								textRangeToRange(textEditor.document, component.parameterRange),
+								`${props}: ${name}Props`,
+							);
+						}
+					});
+
+					renameFile(textEditor.document.uri);
+				}
+				return;
 			},
 		),
 	);
@@ -246,16 +123,6 @@ function commandEditCallback(
 			typeText,
 		);
 	}
-}
-
-function textRangeToRange(
-	document: vscode.TextDocument,
-	textRange: [number, number],
-) {
-	return new vscode.Range(
-		document.positionAt(textRange[0]),
-		document.positionAt(textRange[1]),
-	);
 }
 
 // This method is called when your extension is deactivated
