@@ -4,6 +4,11 @@ All notable changes to the "vscode-pt-converter" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [v1.10]
 
-- Initial release
+- Upgrade to proptype-converter v1.6.1 allowing support for arrow function/function expression components
+
+## [v1.0.0]
+
+- Full release!
+- Added support for `defaultProps`
