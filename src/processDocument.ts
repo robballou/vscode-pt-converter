@@ -14,5 +14,13 @@ export function processDocument(document: vscode.TextDocument) {
 		return null;
 	}
 
-	return processSourceFile(sourceFile);
+	const configuration = vscode.workspace.getConfiguration(
+		"vscode-pt-converter",
+	);
+
+	return processSourceFile(sourceFile, {
+		includeUnknownFunctionArgumentProps: configuration.get(
+			"includeUnknownFunctionArgumentProps",
+		),
+	});
 }

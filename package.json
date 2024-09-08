@@ -40,7 +40,24 @@
 				"command": "vscode-pt-converter.convert-dp",
 				"title": "Convert PropTypes and defaultProps to TypeScript Types"
 			}
-		]
+		],
+		"configuration": {
+			"title": "PropType Converter",
+			"properties": {
+				"vscode-pt-converter.includeUnknownFunctionArgumentProps": {
+					"title": "Include Unknown Function Props",
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Include props that only appear in the component's arguments in the types/props. By default, only props in `propTypes` will be included."
+				},
+				"vscode-pt-converter.alwaysRenameToTSX": {
+					"title": "Always Rename Files to .tsx",
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "When renaming files, always use `.tsx` for the file extension instead of matching the file's extension"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
@@ -70,7 +87,7 @@
 		"eslint": "^8.57.0",
 		"npm-run-all": "^4.1.5",
 		"prettier": "^3.3.3",
-		"proptype-converter": "1.8",
+		"proptype-converter": "1.9",
 		"typescript": "^5.4.5"
 	}
 }
