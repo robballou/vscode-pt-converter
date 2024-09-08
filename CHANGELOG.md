@@ -4,6 +4,13 @@ All notable changes to the "vscode-pt-converter" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v1.3.0]
+
+- Upgrade to proptype-converter v1.9.0, allowing preservation of props that were only in the component's arguments (and not in the prop types)
+- Adds two new settings for use:
+	- `vscode-pt-converter.alwaysRenameToTSX`: Always rename files to `.tsx` instead of matching the file's current name.
+	- `vscode-pt-converter.includeUnknownFunctionArgumentProps`: Preserve props that were only in the component's arguments while creating the new props argument.
+
 ## [v1.2.1]
 
 - Upgrade to proptype-converter v1.8.0 to fix some indent issues and add support for `instanceOf` PropTypes.
