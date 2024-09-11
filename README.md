@@ -2,6 +2,8 @@
 
 This VSCode extension allows for easy use of [PropType Converter](https://github.com/robballou/proptype-converter) for converting PropTypes to TypeScript types.
 
+[Get the extension!](https://marketplace.visualstudio.com/items?itemName=robballou.vscode-pt-converter)
+
 ## Features
 
 1. Provides a refactor option for JS/TS files to convert PropType implementations to TypeScript Types.

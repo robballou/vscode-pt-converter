@@ -4,6 +4,10 @@ All notable changes to the "vscode-pt-converter" extension will be documented in
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [v1.4.0]
+
+- Upgrade to proptype-converter v1.10.0, allowing preservation of JSDoc comments associated with PropTypes.
+
 ## [v1.3.0]
 
 - Upgrade to proptype-converter v1.9.0, allowing preservation of props that were only in the component's arguments (and not in the prop types)
